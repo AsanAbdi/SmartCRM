@@ -24,9 +24,9 @@ A lightweight ML model (Logistic Regression or Random Forest) is trained on synt
 
 - **Backend:** FastAPI · SQLModel · PostgreSQL
 - **Async Tasks:** Celery · Redis
-- **ML:** scikit-learn / PyTorch
-- **DevOps:** Docker · Railway / Render
-- **Optional:** Telegram Bot · FastAPI Admin · Plotly / Chart.js dashboard
+- **ML:** PyTorch
+- **DevOps:** Docker · Railway
+- **Optional:** Telegram Bot · FastAPI Admin · Plotly
 
 ## 🛠️ Setup
 
