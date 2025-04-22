@@ -32,5 +32,5 @@ A lightweight ML model (Logistic Regression or Random Forest) is trained on synt
 
 ```bash
 git clone https://github.com/your-username/smartcrm.git
-cd smartcrm
+cd SmartCRM
 docker-compose up --build
