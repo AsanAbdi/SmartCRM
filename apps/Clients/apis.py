@@ -1,5 +1,7 @@
+from uuid import uuid4
 import uuid
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from sqlmodel import select, func
 
 from apps.Clients.models import (
@@ -7,12 +9,11 @@ from apps.Clients.models import (
     ClientCreate,
     ClientList,
     ClientUpdate,
-    Client,
-    Message
+    Client
 )
 from config.settings import settings
 from apps.deps import SessionDep
-from config.utils import utcnow
+from config.utils import utcnow_time
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -46,13 +47,20 @@ def get_client(
 def create_client(
     session: SessionDep,
     client_in: ClientCreate,
-) -> ClientCreate:
-    client = Client.model_validate(client_in)
+) -> ClientPublic:
+    if session.get(Client, client_in.email) or session.get(Client, client_in.phone_number):
+        raise HTTPException(status_code=403, detail="Client with this email or phone number already exists")
+    client = Client(
+        id=uuid4(),
+        created_at=utcnow_time(),
+        is_active=True,
+        **client_in.model_dump(),
+    )
     session.add(client)
     session.commit()
     session.refresh(client)
     return client
-    
+
 
 
 @router.put("/{id}", response_model=ClientPublic)
@@ -72,14 +80,14 @@ def update_client(
     return client
 
 
-@router.delete("/{id}", response_model=Message)
+@router.delete("/{id}", response_model=JSONResponse)
 def delete_client(
     session: SessionDep,
     id: uuid.UUID
-) -> Message:
+) -> JSONResponse:
     client = session.get(Client, id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     session.delete(client)
     session.commit()
-    return Message(status=200, message="Client deleted successfully")
+    return JSONResponse(content={"response": "User was successfully deleted"}, status_code=200)
