@@ -19,7 +19,9 @@ router = APIRouter(prefix="/clients", tags=["clients"])
 
 @router.get("/", response_model=ClientList)
 def get_clients(
-        session: SessionDep, skip: int = 0, limit: int = 100 
+        session: SessionDep,
+        skip: int = 0,
+        limit: int = 100
     ) -> ClientList:
     limit = min(limit, settings.MAX_LIMIT)
     # List of clients
@@ -28,7 +30,7 @@ def get_clients(
     count = session.exec(count_statement).one()
     statement = select(Client).order_by(Client.created_at.desc()).offset(skip).limit(limit)
     clients = session.exec(statement).all()
-    return ClientList(data=clients, count=count)
+    return ClientList(items=clients, total_count=count)
 
 
 @router.get("/{id}", response_model=ClientPublic)
@@ -80,7 +82,7 @@ def update_client(
     return client
 
 
-@router.delete("/{id}", response_model=JSONResponse)
+@router.delete("/{id}")
 def delete_client(
     session: SessionDep,
     id: uuid.UUID

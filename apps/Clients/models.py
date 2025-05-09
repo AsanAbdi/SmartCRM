@@ -6,6 +6,7 @@ from pydantic import EmailStr
 from enum import Enum
 
 from config.utils import utcnow_time
+from apps.Users.models import User
 
 
 class ClientSource(str, Enum):
@@ -108,7 +109,7 @@ class Client(SQLModel, table=True):
     last_activity_at: Optional[date]
     activity_count: Optional[int]
     prediction_score: Optional[float]
-    assigned_to: Optional[UUID] = Field(foreign_key="user.id")
+    assigned_to: Optional[UUID] = Field(foreign_key="User.id")
     location: Optional[str] = Field(max_length=255)
     birth_date: Optional[date]
     notes: Optional[str] = Field(max_length=10000)
