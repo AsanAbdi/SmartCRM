@@ -16,7 +16,7 @@ from apps.Users.models import (
 from config.security import get_password_hash
 
 
-router = APIRouter(prefix="users/", tags=["Users"], )
+router = APIRouter(prefix="/users", tags=["Users"], )
 
 
 @router.get("/", response_model=UserList)

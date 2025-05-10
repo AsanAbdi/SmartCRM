@@ -50,7 +50,7 @@ class UserList(SQLModel):
 
 
 class User(SQLModel, table=True):
-    __tablename__ = "User"
+    __tablename__ = "user"
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True, unique=True)
     username: str = Field(unique=True, index=True, max_length=255)
     email: EmailStr = Field(unique=True, index=True, max_length=255)
