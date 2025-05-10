@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key"
     MAX_LIMIT: int = 200
     API_V1_STR: str = "/api/v1"
+    ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:

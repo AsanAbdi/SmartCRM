@@ -51,7 +51,7 @@ def create_client(
     client_in: ClientCreate,
 ) -> ClientPublic:
     if session.get(Client, client_in.email) or session.get(Client, client_in.phone_number):
-        raise HTTPException(status_code=403, detail="Client with this email or phone number already exists")
+        raise HTTPException(detail="Client with this email or phone number already exists", status_code=409)
     client = Client(
         id=uuid4(),
         created_at=utcnow_time(),

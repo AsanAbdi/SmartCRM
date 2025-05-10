@@ -50,14 +50,14 @@ def create_user(
     session: SessionDep,
     user_in: UserCreate,
 ) -> UserPublic:
-    if session.get(User, user_in.email) or session.get(User, user_in.username):
-        raise HTTPException(detail="User with same email or useranem already exists", status_code=401)
+    if session.exec(select(User).where((User.email == user_in.email))).first() or session.exec(select(User).where((User.username == user_in.username))).first():
+        raise HTTPException(status_code=409, detail="User with same email or username already exists")
+    data = user_in.model_dump()
+    print(data, "ХУЙ ЕГО ЧТО ЕЩЁ")
     user = User(
         id=uuid4(),
-        date_joined=utcnow_date(),
-        is_active=True,
-        hashed_password=get_password_hash(user_in.password)
-        *user_in.model_dump()
+        hashed_password=get_password_hash(data.pop("password")),
+        **data
     )
     session.add(user)
     session.commit()
@@ -73,7 +73,7 @@ def update_user(
     user = session.get(User, id)
     if not user:
         raise HTTPException(detail="User not found", status_code=404)
-    update_dict = user_in.model_dump(exculde_unset=True)
+    update_dict = user_in.model_dump(exclude_unset=True)
     user.sqlmodel_update(update_dict)
     session.add(user)
     session.commit()
@@ -88,7 +88,7 @@ def delete_user(
 ) -> JSONResponse:
     user = session.get(User, id)
     if not user:
-        HTTPException(detail="User not found", status_code=404)
+        raise HTTPException(detail="User not found", status_code=404)
     session.delete(user)
     session.commit()
-    return JSONResponse(content={"response": "User was successfully deleted"}, status_cdoe=200)
+    return JSONResponse(content={"response": "User was successfully deleted"}, status_code=200)
