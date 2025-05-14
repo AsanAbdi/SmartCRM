@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.responses import JSONResponse
 from sqlmodel import select, func
 from uuid import UUID, uuid4
 
 from apps.deps import SessionDep
 from config.settings import settings
-from config.utils import utcnow_date
+from apps.deps import get_current_user
 from apps.Users.models import (
     User,
     UserCreate,
@@ -23,10 +23,10 @@ router = APIRouter(prefix="/users", tags=["Users"], )
 def get_users(
     session: SessionDep,
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    user: User = Depends(get_current_user)
 ) -> UserList:
     limit = min(limit, settings.MAX_LIMIT)
-    #TODO add checking for authentication
     count_statement = select(func.count()).select_from(User)
     count = session.exec(count_statement).one()
     users_statement = select(User).order_by(User.date_joined.desc()).offset(skip).limit(limit)
@@ -37,11 +37,12 @@ def get_users(
 @router.get("/{id}", response_model=UserPublic)
 def get_user(
     session: SessionDep,
-    id: UUID
+    id: UUID,
+    user: User = Depends(get_current_user)
 ) -> UserPublic:
     user = session.get(User, id)
     if not user:
-        raise HTTPException(detail="User not found", status_code=404)
+        raise HTTPException(detail="User not found", status_code=status.HTTP_404_NOT_FOUND)
     return user
 
 
@@ -49,9 +50,10 @@ def get_user(
 def create_user(
     session: SessionDep,
     user_in: UserCreate,
+    user: User = Depends(get_current_user)
 ) -> UserPublic:
     if session.exec(select(User).where((User.email == user_in.email))).first() or session.exec(select(User).where((User.username == user_in.username))).first():
-        raise HTTPException(status_code=409, detail="User with same email or username already exists")
+        raise HTTPException(detail="User with same email or username already exists", status_code=status.HTTP_409_CONFLICT)
     data = user_in.model_dump()
     print(data, "ХУЙ ЕГО ЧТО ЕЩЁ")
     user = User(
@@ -68,11 +70,12 @@ def create_user(
 def update_user(
     session: SessionDep,
     user_in: UserUpdate,
-    id: UUID
+    id: UUID,
+    user: User = Depends(get_current_user)
 ) -> UserPublic:
     user = session.get(User, id)
     if not user:
-        raise HTTPException(detail="User not found", status_code=404)
+        raise HTTPException(detail="User not found", status_code=status.HTTP_404_NOT_FOUND)
     update_dict = user_in.model_dump(exclude_unset=True)
     user.sqlmodel_update(update_dict)
     session.add(user)
@@ -85,10 +88,11 @@ def update_user(
 def delete_user(
     session: SessionDep,
     id: UUID,
+    user: User = Depends(get_current_user)
 ) -> JSONResponse:
     user = session.get(User, id)
     if not user:
-        raise HTTPException(detail="User not found", status_code=404)
+        raise HTTPException(detail="User not found", status_code=status.HTTP_404_NOT_FOUND)
     session.delete(user)
     session.commit()
-    return JSONResponse(content={"response": "User was successfully deleted"}, status_code=200)
+    return JSONResponse(content={"response": "User was successfully deleted"}, status_code=status.HTTP_200_OK)

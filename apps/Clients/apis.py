@@ -1,6 +1,6 @@
 from uuid import uuid4
 import uuid
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.responses import JSONResponse
 from sqlmodel import select, func
 
@@ -12,17 +12,20 @@ from apps.Clients.models import (
     Client
 )
 from config.settings import settings
-from apps.deps import SessionDep
+from apps.deps import SessionDep, get_current_user
+from apps.Users.models import User
 from config.utils import utcnow_time
+
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
 @router.get("/", response_model=ClientList)
 def get_clients(
-        session: SessionDep,
-        skip: int = 0,
-        limit: int = 100
-    ) -> ClientList:
+    session: SessionDep, 
+    skip: int = 0,
+    limit: int = 100,
+    user: User = Depends(get_current_user)
+) -> ClientList:
     limit = min(limit, settings.MAX_LIMIT)
     # List of clients
     #TODO add checking for authentication
@@ -35,23 +38,25 @@ def get_clients(
 
 @router.get("/{id}", response_model=ClientPublic)
 def get_client(
-    session: SessionDep,
-    id: uuid.UUID
+    session: SessionDep, 
+    id: uuid.UUID,
+    user: User = Depends(get_current_user)
 ) -> ClientPublic:
     #Get Client by id
     client = session.get(Client, id)
     if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
     return client
 
 
 @router.post("/", response_model=ClientPublic)
 def create_client(
-    session: SessionDep,
+    session: SessionDep, 
     client_in: ClientCreate,
+    user: User = Depends(get_current_user)
 ) -> ClientPublic:
     if session.get(Client, client_in.email) or session.get(Client, client_in.phone_number):
-        raise HTTPException(detail="Client with this email or phone number already exists", status_code=409)
+        raise HTTPException(detail="Client with this email or phone number already exists", status_code=status.HTTP_409_CONFLICT)
     client = Client(
         id=uuid4(),
         created_at=utcnow_time(),
@@ -67,13 +72,14 @@ def create_client(
 
 @router.put("/{id}", response_model=ClientPublic)
 def update_client(
-    session: SessionDep,
+    session: SessionDep, 
     client_in: ClientUpdate,
-    id: uuid.UUID
+    id: uuid.UUID,
+    user: User = Depends(get_current_user)
 ) -> ClientPublic:
     client = session.get(Client, id)
     if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
+        raise HTTPException(detail="Client not found", status_code=status.HTTP_404_NOT_FOUND)
     update_dict = client_in.model_dump(exclude_unset=True)
     client.sqlmodel_update(update_dict)
     session.add(client)
@@ -84,12 +90,13 @@ def update_client(
 
 @router.delete("/{id}")
 def delete_client(
-    session: SessionDep,
-    id: uuid.UUID
+    session: SessionDep, 
+    id: uuid.UUID,
+    user: User = Depends(get_current_user)
 ) -> JSONResponse:
     client = session.get(Client, id)
     if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
+        raise HTTPException(detail="Client not found", status_code=status.HTTP_404_NOT_FOUND)
     session.delete(client)
     session.commit()
-    return JSONResponse(content={"response": "User was successfully deleted"}, status_code=200)
+    return JSONResponse(content={"response": "User was successfully deleted"}, status_code=status.HTTP_200_OK)
