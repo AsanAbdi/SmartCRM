@@ -14,3 +14,5 @@ app = FastAPI()
 app.include_router(ClientRouter, prefix=settings.API_V1_STR)
 app.include_router(UserRouter, prefix=settings.API_V1_STR)
 app.include_router(LoginRouter, prefix=settings.API_V1_STR)
+
+#TODO rewrite all query\path params to Annotated

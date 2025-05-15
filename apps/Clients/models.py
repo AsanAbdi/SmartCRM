@@ -94,7 +94,7 @@ class ClientList(SQLModel):
 
 
 class Client(SQLModel, table=True):
-    __tablename__ = "clients"
+    __tablename__ = "client"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True, unique=True, index=True)
     full_name: str = Field(max_length=255, index=True)
