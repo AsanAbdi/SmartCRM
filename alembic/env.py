@@ -16,10 +16,6 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
 
 from apps.Clients.models import Client
 from apps.Users.models import User
@@ -31,26 +27,10 @@ from config.settings import settings
 
 target_metadata = SQLModel.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 print("Это принт в env.py вне функций:", settings.SQLALCHEMY_DATABASE_URI)
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
-    print("Это принт в run_migrations_offilne:", settings.SQLALCHEMY_DATABASE_URI)
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -70,7 +50,6 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    print("Это принт в run_migrations_onilne:", settings.SQLALCHEMY_DATABASE_URI)
     connectable = create_engine(
         settings.SQLALCHEMY_DATABASE_URI,
         poolclass=pool.NullPool
