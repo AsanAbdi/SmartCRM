@@ -1,3 +1,4 @@
+from pydantic import EmailStr
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -11,6 +12,11 @@ class Settings(BaseSettings):
     MAX_LIMIT: int = 200
     API_V1_STR: str = "/api/v1"
     ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
+    SUPERUSER_USERNAME: str
+    SUPERUSER_PASSWORD: str
+    SUPERUSER_EMAIL: EmailStr
+    SUPERUSER_ROLE: str
+    NORMAL_USER_USERNAME: str
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:

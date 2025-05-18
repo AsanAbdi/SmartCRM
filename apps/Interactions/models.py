@@ -1,13 +1,10 @@
 from enum import Enum
 from typing import Optional
-from pydantic import field_validator
 from sqlmodel import SQLModel, Field
 from sqlalchemy import Column, DateTime
 from config.utils import utcnow_time
 from uuid import UUID, uuid4
-import json
-from typing import Any
-from datetime import datetime, timezone
+from datetime import datetime
 
 
 class InteractionType(str, Enum):

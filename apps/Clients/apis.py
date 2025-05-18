@@ -16,6 +16,7 @@ from apps.deps import SessionDep, get_current_user
 from apps.Users.models import User
 from config.utils import utcnow_time
 
+#TODO работать с клиентами может только assigned_to и юзер с ролью admin
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -99,4 +100,4 @@ def delete_client(
         raise HTTPException(detail="Client not found", status_code=status.HTTP_404_NOT_FOUND)
     session.delete(client)
     session.commit()
-    return JSONResponse(content={"response": "User was successfully deleted"}, status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"response": "Client was successfully deleted"}, status_code=status.HTTP_200_OK)
