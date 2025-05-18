@@ -53,9 +53,9 @@ def get_client(
 def create_client(
     session: SessionDep, 
     client_in: ClientCreate,
-    user: User = Depends(get_current_user)
+    # user: User = Depends(get_current_user)
 ) -> ClientPublic:
-    if session.get(Client, client_in.email) or session.get(Client, client_in.phone_number):
+    if session.exec(select(Client).where(Client.email == client_in.email)).first() or session.exec(select(Client).where(Client.phone_number == client_in.phone_number)).first():
         raise HTTPException(detail="Client with this email or phone number already exists", status_code=status.HTTP_409_CONFLICT)
     client = Client(
         id=uuid4(),

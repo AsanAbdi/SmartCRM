@@ -50,12 +50,11 @@ def get_user(
 def create_user(
     session: SessionDep,
     user_in: UserCreate,
-    user: User = Depends(get_current_user)
+    # user: User = Depends(get_current_user)
 ) -> UserPublic:
     if session.exec(select(User).where((User.email == user_in.email))).first() or session.exec(select(User).where((User.username == user_in.username))).first():
         raise HTTPException(detail="User with same email or username already exists", status_code=status.HTTP_409_CONFLICT)
     data = user_in.model_dump()
-    print(data, "ХУЙ ЕГО ЧТО ЕЩЁ")
     user = User(
         id=uuid4(),
         hashed_password=get_password_hash(data.pop("password")),
@@ -65,6 +64,7 @@ def create_user(
     session.commit()
     session.refresh(user)
     return user
+
 
 @router.put("/{id}", response_model=UserPublic)
 def update_user(

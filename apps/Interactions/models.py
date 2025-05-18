@@ -31,23 +31,7 @@ class ChannelType(str, Enum):
     instagram = "instagram"
 
 
-class InteractionValidators(SQLModel):
-    @field_validator("revenue", mode="after", check_fields=False)
-    @classmethod
-    def _validate_revenue(cls, v):
-        if v is not None and v <= 0:
-            raise ValueError("revenue must be > 0")
-        return v
-
-    @field_validator("interaction_datetime", mode="after", check_fields=False)
-    @classmethod
-    def _validate_datetime(cls, v):
-        if v > datetime.now(timezone.utc):
-            raise ValueError("interaction_datetime cannot be in the future")
-        return v
-
-
-class InteractionCreate(InteractionValidators, SQLModel):
+class InteractionCreate(SQLModel):
     client_id: UUID
     user_id: UUID
     interaction_type: InteractionType
@@ -60,7 +44,7 @@ class InteractionCreate(InteractionValidators, SQLModel):
     external_id: Optional[str]
 
 
-class InteractionUpdate(InteractionValidators, SQLModel):
+class InteractionUpdate(SQLModel):
     is_active: Optional[bool]
     client_id: Optional[UUID]
     user_id: Optional[UUID]
@@ -72,6 +56,9 @@ class InteractionUpdate(InteractionValidators, SQLModel):
     cost_center: Optional[str]
     notes: Optional[str] = Field(max_length=10000)
     external_id: Optional[str]
+
+    class Config:
+        orm_mode = True
 
 
 class InteractionPublic(SQLModel):
@@ -109,7 +96,7 @@ class InteractionList(SQLModel):
         orm_mode = True
 
 
-class Interaction(InteractionValidators, SQLModel, table=True):
+class Interaction(SQLModel, table=True):
     __tablename__ = "interaction"
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True, unique=True)
     created_at: datetime = Field(sa_column=Column(DateTime, default=utcnow_time))
