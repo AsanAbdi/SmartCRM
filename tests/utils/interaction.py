@@ -13,9 +13,9 @@ from tests.utils.client import create_random_client
 
 
 def create_random_interaction(db: Session) -> Interaction:
-    user = create_random_user()
+    user = create_random_user(db)
     user_id = user.id
-    client = create_random_client()
+    client = create_random_client(db)
     client_id = client.id
     interaction_datetime = datetime.now(timezone.utc) - timedelta(days=1)
     interaction_in = InteractionCreate(

@@ -17,7 +17,7 @@ class UserCore(SQLModel):
     username: str = Field(max_length=255)
     email: EmailStr = Field(max_length=255)
     date_joined: date = Field(default_factory=utcnow_date)
-    role: Optional[UserRole]
+    role: Optional[UserRole] = Field(default=UserRole.manager)
     
 
 class UserCreate(UserCore):

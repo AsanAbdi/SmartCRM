@@ -24,7 +24,7 @@ def test_create_client(
         "phone_number": random_phone_number(),
         "source": ClientSource.other,
         "segment": ClientSegment.test,
-        "assigned_to": user_id
+        "assigned_to": str(user_id)
     }
     response = client.post(
         url=BASE_URL,
@@ -136,7 +136,7 @@ def test_update_client(
         "phone_number": random_phone_number(),
         "source": ClientSource.other,
         "segment": ClientSegment.test,
-        "assigned_to": user_id
+        "assigned_to": str(user_id)
     }
     new_client = create_random_client(db)
     response = client.put(
@@ -167,7 +167,7 @@ def test_udpate_client_not_found(
         "phone_number": random_phone_number(),
         "source": ClientSource.other,
         "segment": ClientSegment.test,
-        "assigned_to": user_id
+        "assigned_to": str(user_id)
     }
     response = client.put(
         url=f"{BASE_URL}/{uuid.uuid4()}",

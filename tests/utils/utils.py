@@ -20,10 +20,12 @@ def get_superuser_token_headers(client: TestClient) -> dict[str: str]:
         "password": settings.SUPERUSER_PASSWORD
     }
     r = client.post(
-        url=f'{settings.API_V1_STR}/login/access_token',
+        url=f'{settings.API_V1_STR}/login/access-token',
         data=login_data
     )
     token = r.json()
     access_token = token["access_token"]
     headers = {"Authentication": f"Bearer {access_token}"}
     return headers
+
+print(random_phone_number())

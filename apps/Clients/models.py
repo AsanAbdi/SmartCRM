@@ -105,11 +105,7 @@ class Client(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=utcnow_time)
     source: ClientSource = Field(index=True)
     segment: ClientSegment = Field(index=True)
-    lifetime_value: Optional[float]
-    last_activity_at: Optional[date]
-    activity_count: Optional[int]
-    prediction_score: Optional[float]
     assigned_to: Optional[UUID] = Field(foreign_key="user.id")
-    location: Optional[str] = Field(max_length=255)
-    birth_date: Optional[date]
-    notes: Optional[str] = Field(max_length=10000)
+    location: Optional[str] = Field(default=None, max_length=255)
+    birth_date: Optional[date] = Field(default=None)
+    notes: Optional[str] = Field(default=None, max_length=10000)

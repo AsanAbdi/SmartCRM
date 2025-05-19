@@ -17,7 +17,7 @@ from tests.utils.utils import get_superuser_token_headers
 @pytest.fixture(scope="session", autouse=True)
 def db() -> Generator[Session, None, None]:
     with Session(engine) as session:
-        init_db()
+        init_db(session)
         yield session
         statement = delete(Client)
         session.exec(statement)
@@ -39,7 +39,7 @@ def super_user_headers(client: TestClient) -> dict[str: str]:
 
 
 @pytest.fixture(scope="module")
-def normal_user_token_headers(client: TestClient, db: Session) -> dict[str: str]:
+def normal_user_headers(client: TestClient, db: Session) -> dict[str: str]:
     return authenticate_token_from_email(
-        client=client, username=settings.SUPERUSER_USERNAME, db=db
+        client=client, username=settings.NORMAL_USER_USERNAME, db=db
     )

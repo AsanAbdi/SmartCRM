@@ -11,7 +11,7 @@ from tests.utils.user import create_random_user
 
 
 def create_random_client(db: Session) -> Client:
-    user = create_random_user()
+    user = create_random_user(db)
     assigned_to_id = user.id
     assert assigned_to_id is not None
     full_name = random_lower_string()
