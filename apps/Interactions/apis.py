@@ -95,4 +95,4 @@ def delete_interaction(
         raise HTTPException(detail="Interaction not found", status_code=status.HTTP_404_NOT_FOUND)
     session.delete(interaction)
     session.commit()
-    return JSONResponse(content="Interaction was deleted successfully", status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"detail": "Interaction was deleted successfully"}, status_code=status.HTTP_200_OK)

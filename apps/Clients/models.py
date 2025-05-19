@@ -37,10 +37,10 @@ class ClientBase(SQLModel):
     phone_number: Optional[str] = Field(max_length=20, regex=r"^\+\d{7,19}$")
     source: Optional[ClientSource]
     segment: Optional[ClientSegment]
-    assigned_to: Optional[UUID]
-    location: Optional[str] = Field(max_length=255)
-    birth_date: Optional[date]
-    notes: Optional[str] = Field(max_length=10000)
+    assigned_to: Optional[UUID] = Field(default=None)
+    location: Optional[str] = Field(default=None, max_length=255)
+    birth_date: Optional[date] = Field(default=None)
+    notes: Optional[str] = Field(default=None, max_length=10000)
 
 
 class ClientCreate(ClientBase):
@@ -52,8 +52,8 @@ class ClientCreate(ClientBase):
 
 
 class ClientUpdate(ClientBase):
-    is_active: Optional[bool]
-    updated_at: Optional[datetime]
+    is_active: Optional[bool] = Field(default=True)
+    updated_at: Optional[datetime] = Field(default_factory=utcnow_time)
 
 
 class ClientPublic(SQLModel):
@@ -64,6 +64,7 @@ class ClientPublic(SQLModel):
     phone_number: str
     source: ClientSource
     segment: ClientSegment
+    assigned_to: Optional[UUID]
     location: Optional[str]
     birth_date: Optional[date]
     notes: Optional[str]

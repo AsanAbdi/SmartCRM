@@ -25,7 +25,5 @@ def get_superuser_token_headers(client: TestClient) -> dict[str: str]:
     )
     token = r.json()
     access_token = token["access_token"]
-    headers = {"Authentication": f"Bearer {access_token}"}
+    headers = {"Authorization": f"Bearer {access_token}"}
     return headers
-
-print(random_phone_number())

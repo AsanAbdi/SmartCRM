@@ -46,14 +46,14 @@ def authenticate_token_from_email(
     email = random_email()
     user = db.exec(select(User).where(User.username==username)).first()
     if not user:
-        password_hash = get_password_hash(password)  # Хешируем пароль
+        password_hash = get_password_hash(password)
         user_in_create = UserCreate(
             username=username,
             email=email,
             password=password,
         )
         user_data = user_in_create.model_dump()
-        user_data["hashed_password"] = password_hash  # Добавляем хешированный пароль
+        user_data["hashed_password"] = password_hash
         user = User.model_validate(user_data)
         db.add(user)
         db.commit()

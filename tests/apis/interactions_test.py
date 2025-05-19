@@ -62,13 +62,13 @@ def test_read_interaction(
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["client_id"] == interaction.client_id
-    assert content["user_id"] == interaction.user_id
+    assert content["client_id"] == str(interaction.client_id)
+    assert content["user_id"] == str(interaction.user_id)
     assert content["interaction_type"] == interaction.interaction_type
     assert content["interaction_datetime"] == interaction.interaction_datetime
     assert content["channel"] == interaction.channel
     assert content["interaction_status"] == interaction.interaction_status
-    assert content["id"] == interaction.id
+    assert content["id"] == str(interaction.id)
     
 
 def test_read_interaction_not_found(

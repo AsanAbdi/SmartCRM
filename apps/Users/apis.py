@@ -95,4 +95,4 @@ def delete_user(
         raise HTTPException(detail="User not found", status_code=status.HTTP_404_NOT_FOUND)
     session.delete(user)
     session.commit()
-    return JSONResponse(content={"response": "User was successfully deleted"}, status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"detail": "User was successfully deleted"}, status_code=status.HTTP_200_OK)

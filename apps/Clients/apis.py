@@ -13,12 +13,20 @@ from apps.Clients.models import (
 )
 from config.settings import settings
 from apps.deps import SessionDep, get_current_user
-from apps.Users.models import User
+from apps.Users.models import User, UserRole
 from config.utils import utcnow_time
 
-#TODO работать с клиентами может только assigned_to и юзер с ролью admin
-
 router = APIRouter(prefix="/clients", tags=["clients"])
+
+PERMISSION_EXCEPTION = HTTPException(
+    detail="Not enough permission", 
+    status_code=status.HTTP_400_BAD_REQUEST
+)
+
+NOT_EXISTING_ASSIGNED_TO = HTTPException(
+    detail="User that you assigned to does not exist",
+    status_code=status.HTTP_400_BAD_REQUEST
+)
 
 @router.get("/", response_model=ClientList)
 def get_clients(
@@ -27,9 +35,9 @@ def get_clients(
     limit: int = 100,
     user: User = Depends(get_current_user)
 ) -> ClientList:
+    if user.role != UserRole.admin:
+        raise PERMISSION_EXCEPTION
     limit = min(limit, settings.MAX_LIMIT)
-    # List of clients
-    #TODO add checking for authentication
     count_statement = select(func.count()).select_from(Client)
     count = session.exec(count_statement).one()
     statement = select(Client).order_by(Client.created_at.desc()).offset(skip).limit(limit)
@@ -43,10 +51,12 @@ def get_client(
     id: uuid.UUID,
     user: User = Depends(get_current_user)
 ) -> ClientPublic:
-    #Get Client by id
     client = session.get(Client, id)
     if not client:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
+    if user.role != UserRole.admin and client.assigned_to is not None:
+        if client.assigned_to != user.id:
+            raise PERMISSION_EXCEPTION
     return client
 
 
@@ -54,10 +64,14 @@ def get_client(
 def create_client(
     session: SessionDep, 
     client_in: ClientCreate,
-    # user: User = Depends(get_current_user)
+    user: User = Depends(get_current_user)
 ) -> ClientPublic:
     if session.exec(select(Client).where(Client.email == client_in.email)).first() or session.exec(select(Client).where(Client.phone_number == client_in.phone_number)).first():
         raise HTTPException(detail="Client with this email or phone number already exists", status_code=status.HTTP_409_CONFLICT)
+    if client_in.assigned_to is not None:
+        user = session.get(User, client_in.assigned_to)
+        if not user:
+            raise NOT_EXISTING_ASSIGNED_TO
     client = Client(
         id=uuid4(),
         created_at=utcnow_time(),
@@ -81,6 +95,9 @@ def update_client(
     client = session.get(Client, id)
     if not client:
         raise HTTPException(detail="Client not found", status_code=status.HTTP_404_NOT_FOUND)
+    if client.assigned_to is not None and user.role != UserRole.admin:
+        if client.assigned_to != user.id:
+            raise PERMISSION_EXCEPTION
     update_dict = client_in.model_dump(exclude_unset=True)
     client.sqlmodel_update(update_dict)
     session.add(client)
@@ -98,6 +115,9 @@ def delete_client(
     client = session.get(Client, id)
     if not client:
         raise HTTPException(detail="Client not found", status_code=status.HTTP_404_NOT_FOUND)
+    if client.assigned_to is not None and user.role != UserRole.admin:
+        if client.assigned_to != user.id:
+            raise PERMISSION_EXCEPTION
     session.delete(client)
     session.commit()
-    return JSONResponse(content={"response": "Client was successfully deleted"}, status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"detail": "Client was successfully deleted"}, status_code=status.HTTP_200_OK)
