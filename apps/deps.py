@@ -9,7 +9,7 @@ from sqlmodel import Session
 from config.settings import settings
 from apps.Users.models import User
 from config.security import ALGORITHM
-from config.db import engine
+from config.db import engine, init_db
 
 
 scheme_oauth2 = OAuth2PasswordBearer(
@@ -20,6 +20,7 @@ scheme_oauth2 = OAuth2PasswordBearer(
 
 def get_db() -> Generator[Session, None, None]:
     with Session(engine) as session:
+        init_db(session)
         yield session
 
 SessionDep = Annotated[Session, Depends(get_db)]

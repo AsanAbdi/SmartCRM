@@ -42,17 +42,17 @@ class InteractionCreate(SQLModel):
 
 
 class InteractionUpdate(SQLModel):
-    is_active: Optional[bool]
+    is_active: Optional[bool] = Field(default=True)
     client_id: Optional[UUID]
     user_id: Optional[UUID]
     interaction_type: Optional[InteractionType]
     channel: Optional[ChannelType]
     interaction_status: Optional[InteractionStatus]
     interaction_datetime: Optional[datetime]
-    revenue: Optional[float]
-    cost_center: Optional[str]
-    notes: Optional[str] = Field(max_length=10000)
-    external_id: Optional[str]
+    revenue: Optional[float] = Field(default=None)
+    cost_center: Optional[str] = Field(default=None, max_length=255)
+    notes: Optional[str] = Field(default=None, max_length=10000)
+    external_id: Optional[str] = Field(default=None)
 
     class Config:
         orm_mode = True
