@@ -2,7 +2,7 @@ from typing import Optional
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field
 from datetime import date, datetime
-from pydantic import EmailStr
+from pydantic import ConfigDict, EmailStr
 from enum import Enum
 
 from config.utils import utcnow_time
@@ -69,9 +69,7 @@ class ClientPublic(SQLModel):
     birth_date: Optional[date]
     notes: Optional[str]
     
-    class Config:
-        orm_mode = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClientListItem(SQLModel):
@@ -82,16 +80,14 @@ class ClientListItem(SQLModel):
     source: ClientSource
     segment: ClientSegment
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClientList(SQLModel):
     items: list[ClientListItem]
     total_count: int
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Client(SQLModel, table=True):

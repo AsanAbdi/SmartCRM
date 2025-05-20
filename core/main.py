@@ -34,7 +34,4 @@ class InteractionAdmin(ModelView, model=Interaction):
 admin.add_view(ClientAdmin)
 admin.add_view(UserAdmin)
 admin.add_view(InteractionAdmin)
-#TODO rewrite all query\path params to Annotated
 #TODO Refactor all files and whole code, to normal annotations and logic holes
-#TODO make email verification after registration
-#TODO in clients endpoints need to add verification is the user that making requests the one who is "assigned_to"

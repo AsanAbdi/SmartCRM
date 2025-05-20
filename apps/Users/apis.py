@@ -1,7 +1,17 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from aiosmtplib.__main__ import recipients
+from fastapi import (
+    APIRouter, 
+    HTTPException, 
+    Depends, 
+    status,
+    Body,
+    Path,
+    Query,
+)
 from fastapi.responses import JSONResponse
 from sqlmodel import select, func
 from uuid import UUID, uuid4
+from typing import Annotated
 
 from apps.deps import SessionDep
 from config.settings import settings
@@ -23,9 +33,9 @@ router = APIRouter(prefix="/users", tags=["Users"], )
 @router.get("/", response_model=UserList)
 def get_users(
     session: SessionDep,
-    skip: int = 0,
-    limit: int = 100,
-    current_user: User = Depends(get_current_user)
+    current_user: Annotated[User, Depends(get_current_user)],
+    skip: Annotated[int, Query()] = 0,
+    limit: Annotated[int, Query()] = 100,
 ) -> UserList:
     limit = min(limit, settings.MAX_LIMIT)
     count_statement = select(func.count()).select_from(User)
@@ -38,8 +48,8 @@ def get_users(
 @router.get("/{id}", response_model=UserPublic)
 def get_user(
     session: SessionDep,
-    id: UUID,
-    current_user: User = Depends(get_current_user)
+    id: Annotated[UUID, Path()],
+    current_user: Annotated[User, Depends(get_current_user)]
 ) -> UserPublic:
     req_user = session.get(User, id)
     if not req_user:
@@ -52,8 +62,7 @@ def get_user(
 @router.post("/", response_model=UserPublic)
 def create_user(
     session: SessionDep,
-    user_in: UserCreate,
-    current_user: User = Depends(get_current_user)
+    user_in: Annotated[UserCreate, Body()],
 ) -> UserPublic:
     if session.exec(select(User).where((User.email == user_in.email))).first() or session.exec(select(User).where((User.username == user_in.username))).first():
         raise HTTPException(detail="User with same email or username already exists", status_code=status.HTTP_409_CONFLICT)
@@ -61,6 +70,7 @@ def create_user(
     user = User(
         id=uuid4(),
         hashed_password=get_password_hash(data.pop("password")),
+        is_active=False,
         **data
     )
     session.add(user)
@@ -72,9 +82,9 @@ def create_user(
 @router.put("/{id}", response_model=UserPublic)
 def update_user(
     session: SessionDep,
-    user_in: UserUpdate,
-    id: UUID,
-    current_user: User = Depends(get_current_user)
+    user_in: Annotated[UserUpdate, Body()],
+    id: Annotated[UUID, Path()],
+    current_user: Annotated[User, Depends(get_current_user)]
 ) -> UserPublic:
     user = session.get(User, id)
     if not user:
@@ -92,8 +102,8 @@ def update_user(
 @router.delete("/{id}")
 def delete_user(
     session: SessionDep,
-    id: UUID,
-    current_user: User = Depends(get_current_user)
+    id: Annotated[UUID, Path()],
+    current_user: Annotated[User, Depends(get_current_user)]
 ) -> JSONResponse:
     user = session.get(User, id)
     if not user:

@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Optional
+from pydantic import ConfigDict
 from sqlmodel import SQLModel, Field
 from sqlalchemy import Column, DateTime
 from config.utils import utcnow_time
@@ -54,9 +55,7 @@ class InteractionUpdate(SQLModel):
     notes: Optional[str] = Field(default=None, max_length=10000)
     external_id: Optional[str] = Field(default=None)
 
-    class Config:
-        orm_mode = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 class InteractionPublic(SQLModel):
     id: UUID
@@ -72,8 +71,7 @@ class InteractionPublic(SQLModel):
     notes: Optional[str]
     external_id: Optional[str]
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InteractionListItem(SQLModel):
@@ -89,8 +87,7 @@ class InteractionList(SQLModel):
     items: list[InteractionListItem]
     total_count: int
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Interaction(SQLModel, table=True):
@@ -110,5 +107,4 @@ class Interaction(SQLModel, table=True):
     notes: Optional[str] = Field(max_length=10000)
     external_id: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

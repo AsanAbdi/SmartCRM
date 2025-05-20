@@ -1,8 +1,17 @@
 from uuid import uuid4
 import uuid
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import (
+    APIRouter, 
+    HTTPException, 
+    Depends, 
+    status,
+    Body,
+    Query,
+    Path
+)
 from fastapi.responses import JSONResponse
-from sqlmodel import select, func
+from sqlmodel import select, func, Session
+from typing import Annotated
 
 from apps.Clients.models import (
     ClientPublic,
@@ -31,9 +40,9 @@ NOT_EXISTING_ASSIGNED_TO = HTTPException(
 @router.get("/", response_model=ClientList)
 def get_clients(
     session: SessionDep, 
-    skip: int = 0,
-    limit: int = 100,
-    user: User = Depends(get_current_user)
+    user: Annotated[User, Depends(get_current_user)],
+    skip: Annotated[int, Query()] = 0,
+    limit: Annotated[int, Query()] = 100
 ) -> ClientList:
     if user.role != UserRole.admin:
         raise PERMISSION_EXCEPTION
@@ -48,8 +57,8 @@ def get_clients(
 @router.get("/{id}", response_model=ClientPublic)
 def get_client(
     session: SessionDep, 
-    id: uuid.UUID,
-    user: User = Depends(get_current_user)
+    id: Annotated[uuid.UUID, Path()],
+    user: Annotated[User, Depends(get_current_user)]
 ) -> ClientPublic:
     client = session.get(Client, id)
     if not client:
@@ -63,8 +72,8 @@ def get_client(
 @router.post("/", response_model=ClientPublic)
 def create_client(
     session: SessionDep, 
-    client_in: ClientCreate,
-    user: User = Depends(get_current_user)
+    client_in: Annotated[ClientCreate, Body()],
+    user: Annotated[User, Depends(get_current_user)]
 ) -> ClientPublic:
     if session.exec(select(Client).where(Client.email == client_in.email)).first() or session.exec(select(Client).where(Client.phone_number == client_in.phone_number)).first():
         raise HTTPException(detail="Client with this email or phone number already exists", status_code=status.HTTP_409_CONFLICT)
@@ -88,9 +97,9 @@ def create_client(
 @router.put("/{id}", response_model=ClientPublic)
 def update_client(
     session: SessionDep, 
-    client_in: ClientUpdate,
-    id: uuid.UUID,
-    user: User = Depends(get_current_user)
+    client_in: Annotated[ClientUpdate, Body()],
+    id: Annotated[uuid.UUID, Path()],
+    user: Annotated[User, Depends(get_current_user)]
 ) -> ClientPublic:
     client = session.get(Client, id)
     if not client:
@@ -109,8 +118,8 @@ def update_client(
 @router.delete("/{id}")
 def delete_client(
     session: SessionDep, 
-    id: uuid.UUID,
-    user: User = Depends(get_current_user)
+    id: Annotated[uuid.UUID, Path()],
+    user: Annotated[User, Depends(get_current_user)]
 ) -> JSONResponse:
     client = session.get(Client, id)
     if not client:

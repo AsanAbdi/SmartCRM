@@ -1,7 +1,16 @@
-from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi import (
+    APIRouter, 
+    status, 
+    HTTPException, 
+    Depends,
+    Body,
+    Path,
+    Query
+)
 from fastapi.responses import JSONResponse
 from sqlmodel import select, func
 from uuid import UUID, uuid4
+from typing import Annotated
 
 from apps.Clients.apis import UserRole
 from apps.Interactions.models import (
@@ -20,9 +29,9 @@ router = APIRouter(prefix="/interactions", tags=["interaction"])
 @router.get("/", response_model=InteractionList)
 def get_interactions(
     session: SessionDep,
-    current_user: User = Depends(get_current_user),
-    skip: int = 0,
-    limit: int = 100
+    current_user: Annotated[User, Depends(get_current_user)],
+    skip: Annotated[int, Query()] = 0,
+    limit: Annotated[int, Query()] = 100
 ) -> InteractionPublic:
     if current_user.role != UserRole.admin:
         raise HTTPException(detail="Not enough permission", status_code=status.HTTP_400_BAD_REQUEST)
@@ -38,8 +47,8 @@ def get_interactions(
 @router.get("/{id}", response_model=InteractionPublic)
 def get_interaction(
     session: SessionDep,
-    id: UUID,
-    current_user: User = Depends(get_current_user)
+    id: Annotated[UUID, Path()],
+    current_user: Annotated[User, Depends(get_current_user)]
 ) -> InteractionPublic:
     interaction = session.get(Interaction, id)
     if not interaction:
@@ -54,8 +63,8 @@ def get_interaction(
 @router.post("/", response_model=InteractionPublic)
 def create_interaction(
     session: SessionDep,
-    interaction_in: InteractionCreate,
-    current_user: User = Depends(get_current_user),
+    interaction_in: Annotated[InteractionCreate, Body()],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> InteractionPublic:
     data = interaction_in.model_dump()
     interaction = Interaction(
@@ -71,9 +80,9 @@ def create_interaction(
 @router.put("/{id}", response_model=InteractionPublic)
 def update_interaction(
     session: SessionDep,
-    interaction_in: InteractionUpdate,
-    id: UUID,
-    current_user: User = Depends(get_current_user)
+    interaction_in: Annotated[InteractionUpdate, Body()],
+    id: Annotated[UUID, Path()],
+    current_user: Annotated[User, Depends(get_current_user)]
 ) -> InteractionPublic:
     interaction = session.get(Interaction, id)
     if not interaction:
@@ -91,8 +100,8 @@ def update_interaction(
 @router.delete("/{id}")
 def delete_interaction(
     session: SessionDep,
-    id: UUID,
-    current_user: User = Depends(get_current_user)
+    id: Annotated[UUID, Path()],
+    current_user: Annotated[User, Depends(get_current_user)]
 ) -> JSONResponse:
     interaction = session.get(Interaction, id)
     if not interaction:
