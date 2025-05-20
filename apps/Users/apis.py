@@ -11,7 +11,8 @@ from apps.Users.models import (
     UserCreate,
     UserUpdate,
     UserList,
-    UserPublic
+    UserPublic,
+    UserRole
 )
 from config.security import get_password_hash
 
@@ -24,7 +25,7 @@ def get_users(
     session: SessionDep,
     skip: int = 0,
     limit: int = 100,
-    user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ) -> UserList:
     limit = min(limit, settings.MAX_LIMIT)
     count_statement = select(func.count()).select_from(User)
@@ -38,19 +39,21 @@ def get_users(
 def get_user(
     session: SessionDep,
     id: UUID,
-    user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ) -> UserPublic:
-    user = session.get(User, id)
-    if not user:
+    req_user = session.get(User, id)
+    if not req_user:
         raise HTTPException(detail="User not found", status_code=status.HTTP_404_NOT_FOUND)
-    return user
+    if current_user.role != UserRole.admin:
+        raise HTTPException(detail="Not enough permission", status_code=status.HTTP_400_BAD_REQUEST)
+    return req_user
 
 
 @router.post("/", response_model=UserPublic)
 def create_user(
     session: SessionDep,
     user_in: UserCreate,
-    # user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ) -> UserPublic:
     if session.exec(select(User).where((User.email == user_in.email))).first() or session.exec(select(User).where((User.username == user_in.username))).first():
         raise HTTPException(detail="User with same email or username already exists", status_code=status.HTTP_409_CONFLICT)
@@ -71,11 +74,13 @@ def update_user(
     session: SessionDep,
     user_in: UserUpdate,
     id: UUID,
-    user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ) -> UserPublic:
     user = session.get(User, id)
     if not user:
         raise HTTPException(detail="User not found", status_code=status.HTTP_404_NOT_FOUND)
+    if user.id != current_user.id and current_user.role != UserRole.admin:
+        raise HTTPException(detail="Not enough permission", status_code=status.HTTP_400_BAD_REQUEST)
     update_dict = user_in.model_dump(exclude_unset=True)
     user.sqlmodel_update(update_dict)
     session.add(user)
@@ -88,11 +93,13 @@ def update_user(
 def delete_user(
     session: SessionDep,
     id: UUID,
-    user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ) -> JSONResponse:
     user = session.get(User, id)
     if not user:
         raise HTTPException(detail="User not found", status_code=status.HTTP_404_NOT_FOUND)
+    if current_user.role != UserRole.admin:
+        raise HTTPException(detail="Not enough permission", status_code=status.HTTP_400_BAD_REQUEST)
     session.delete(user)
     session.commit()
     return JSONResponse(content={"detail": "User was successfully deleted"}, status_code=status.HTTP_200_OK)

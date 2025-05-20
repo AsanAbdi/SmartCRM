@@ -1,5 +1,5 @@
 from sqlmodel import Session
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 from apps.Interactions.models import (
     Interaction,
@@ -17,7 +17,7 @@ def create_random_interaction(db: Session) -> Interaction:
     user_id = user.id
     client = create_random_client(db)
     client_id = client.id
-    interaction_datetime = datetime.now(timezone.utc) - timedelta(days=1)
+    interaction_datetime = datetime.now() - timedelta(days=1)
     interaction_in = InteractionCreate(
         client_id=client_id,
         user_id=user_id,

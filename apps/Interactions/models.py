@@ -35,10 +35,10 @@ class InteractionCreate(SQLModel):
     interaction_datetime: datetime
     channel: ChannelType
     interaction_status: InteractionStatus
-    revenue: Optional[float]
-    cost_center: Optional[str] = Field(max_length=255)
-    notes: Optional[str] = Field(max_length=10000)
-    external_id: Optional[str]
+    revenue: Optional[float] = Field(default=None)
+    cost_center: Optional[str] = Field(default=None, max_length=255)
+    notes: Optional[str] = Field(default=None, max_length=10000)
+    external_id: Optional[str] = Field(default=None)
 
 
 class InteractionUpdate(SQLModel):
@@ -96,8 +96,8 @@ class InteractionList(SQLModel):
 class Interaction(SQLModel, table=True):
     __tablename__ = "interaction"
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True, unique=True)
-    created_at: datetime = Field(sa_column=Column(DateTime, default=utcnow_time))
-    updated_at: datetime = Field(sa_column=Column(DateTime, default=utcnow_time, onupdate=utcnow_time))
+    created_at: datetime = Field(default_factory=utcnow_time)
+    updated_at: datetime = Field(default_factory=utcnow_time)
     is_active: bool = Field(default=True)
     client_id: UUID = Field(foreign_key="client.id", index=True)
     user_id: UUID = Field(foreign_key="user.id", index=True)
@@ -109,9 +109,6 @@ class Interaction(SQLModel, table=True):
     cost_center: Optional[str] = Field(max_length=255)
     notes: Optional[str] = Field(max_length=10000)
     external_id: Optional[str]
-    engagement_score: Optional[float]
-    churn_probability: Optional[float]
-    predicted_ltv: Optional[float]
 
     class Config:
         orm_mode = True

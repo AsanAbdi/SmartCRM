@@ -25,12 +25,12 @@ def test_create_interaction(
     user_id = user.id
     new_client = create_random_client(db)
     client_id = new_client.id
-    interaction_datetime = datetime.now(timezone.utc) - timedelta(days=1)
+    interaction_datetime = datetime.now() - timedelta(days=1)
     data = {
         "client_id": str(client_id),
         "user_id": str(user_id),
         "interaction_type": InteractionType.meeting,
-        "interaction_datetime": interaction_datetime,
+        "interaction_datetime": interaction_datetime.isoformat(),
         "channel": ChannelType.phone,
         "interaction_status": InteractionStatus.pending
     }
@@ -65,7 +65,7 @@ def test_read_interaction(
     assert content["client_id"] == str(interaction.client_id)
     assert content["user_id"] == str(interaction.user_id)
     assert content["interaction_type"] == interaction.interaction_type
-    assert content["interaction_datetime"] == interaction.interaction_datetime
+    assert content["interaction_datetime"] == interaction.interaction_datetime.isoformat()
     assert content["channel"] == interaction.channel
     assert content["interaction_status"] == interaction.interaction_status
     assert content["id"] == str(interaction.id)
@@ -127,12 +127,12 @@ def test_update_interaction(
     user_id = user.id
     new_client = create_random_client(db)
     client_id = new_client.id
-    interaction_datetime = datetime.now(timezone.utc) - timedelta(days=1)
+    interaction_datetime = datetime.now() - timedelta(days=1)
     data = {
         "client_id": str(client_id),
         "user_id": str(user_id),
         "interaction_type": InteractionType.meeting,
-        "interaction_datetime": interaction_datetime,
+        "interaction_datetime": interaction_datetime.isoformat(),
         "channel": ChannelType.phone,
         "interaction_status": InteractionStatus.pending
     }
@@ -155,10 +155,25 @@ def test_update_interaction(
 def test_update_interaction_not_found(
     client: TestClient,
     super_user_headers: dict[str: str],
+    db: Session
 ) -> None:
+    user = create_random_user(db)
+    user_id = user.id
+    new_client = create_random_client(db)
+    client_id = new_client.id
+    interaction_datetime = datetime.now() - timedelta(days=1)
+    data = {
+        "client_id": str(client_id),
+        "user_id": str(user_id),
+        "interaction_type": InteractionType.meeting,
+        "interaction_datetime": interaction_datetime.isoformat(),
+        "channel": ChannelType.phone,
+        "interaction_status": InteractionStatus.pending
+    }
     response = client.put(
         url=f'{BASE_URL}/{uuid.uuid4()}',
         headers=super_user_headers,
+        json=data
     )
     assert response.status_code == 404
     content = response.json()
@@ -170,11 +185,24 @@ def test_update_interaction_not_enough_permission(
     normal_user_headers: dict[str: str],
     db: Session
 ) -> None:
+    user = create_random_user(db)
+    user_id = user.id
+    new_client = create_random_client(db)
+    client_id = new_client.id
+    interaction_datetime = datetime.now() - timedelta(days=1)
+    data = {
+        "client_id": str(client_id),
+        "user_id": str(user_id),
+        "interaction_type": InteractionType.meeting,
+        "interaction_datetime": interaction_datetime.isoformat(),
+        "channel": ChannelType.phone,
+        "interaction_status": InteractionStatus.pending
+    }
     new_interaction = create_random_interaction(db)
     response = client.put(
         url=f'{BASE_URL}/{new_interaction.id}',
         headers=normal_user_headers,
-        json={}
+        json=data
     )
     assert response.status_code == 400
     content = response.json()
@@ -215,10 +243,12 @@ def test_delete_interaction_not_enough_permission(
     db: Session
 ) -> None:
     new_interaction = create_random_interaction(db)
+    print("This is interaction: ", new_interaction)
     response = client.delete(
         url=f'{BASE_URL}/{new_interaction.id}',
         headers=normal_user_headers
     )
+    print("This is response: ", response)
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Not enough permission"

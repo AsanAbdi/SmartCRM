@@ -27,8 +27,7 @@ class UserCreate(UserCore):
 class UserUpdate(SQLModel):
     username: Optional[str] = Field(max_length=255)
     email: Optional[EmailStr] = Field(max_length=255)
-    is_active: Optional[bool]
-    date_joined: Optional[date]
+    is_active: Optional[bool] = Field(default=True)
 
 
 class UserPublic(SQLModel):
