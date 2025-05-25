@@ -43,8 +43,18 @@ jobs:
         echo "SUPERUSER_ROLE=${{ secrets.SUPERUSER_ROLE }}" >> .env
         echo "NORMAL_USER_USERNAME=${{ secrets.NORMAL_USER_USERNAME }}" >> .env
 
-    - name: Проверить .env
-      run: cat .env
+    - name: Verify SECRET_KEY value
+      run: |
+        python - <<EOF
+        import os
+        val = os.environ.get("SECRET_KEY") or open(".env").read().split("SECRET_KEY=")[1].strip()
+        print("len:", len(val))
+        print("first5:", val[:5])
+        print("last5:", val[-5:])
+        EOF
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
 
     - name: Apply migrations
       run: alembic upgrade head
