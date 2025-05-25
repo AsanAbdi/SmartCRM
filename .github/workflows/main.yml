@@ -22,6 +22,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        
+    - name: Установить PYTHONPATH
+      run: echo "PYTHONPATH=${PYTHONPATH}:." >> $GITHUB_ENV
+
+    - name: Проверить
+      run: |
+          python -c "import os; print(os.environ['PYTHONPATH'])"
+    
 
     - name: Create .env
       run: |
@@ -40,11 +48,11 @@ jobs:
         echo "SUPERUSER_ROLE=${{ secrets.SUPERUSER_ROLE }}" >> .env
         echo "NORMAL_USER_USERNAME=${{ secrets.NORMAL_USER_USERNAME }}" >> .env
 
-    - name: Run tests
-      run: pytest
-
     - name: Apply migrations
       run: alembic upgrade head
+
+    - name: Run tests
+      run: pytest
 
     - name: Deploy to Render
       run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
