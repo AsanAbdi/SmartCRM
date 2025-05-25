@@ -1,4 +1,3 @@
-from aiosmtplib.__main__ import recipients
 from fastapi import (
     APIRouter, 
     HTTPException, 

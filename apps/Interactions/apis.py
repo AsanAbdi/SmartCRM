@@ -23,6 +23,8 @@ from apps.Interactions.models import (
 from config.settings import settings
 from apps.Users.models import User
 from apps.deps import SessionDep, get_current_user
+from apps.utils import PERMISSION_EXCEPTION
+
 
 router = APIRouter(prefix="/interactions", tags=["interaction"])
 
@@ -34,7 +36,7 @@ def get_interactions(
     limit: Annotated[int, Query()] = 100
 ) -> InteractionPublic:
     if current_user.role != UserRole.admin:
-        raise HTTPException(detail="Not enough permission", status_code=status.HTTP_400_BAD_REQUEST)
+        raise PERMISSION_EXCEPTION
     limit = min(limit, settings.MAX_LIMIT)
     interactions = session.exec(select(Interaction).order_by(Interaction.created_at).offset(skip).limit(limit))
     count = session.exec(select(func.count()).select_from((Interaction))).one()
@@ -56,7 +58,7 @@ def get_interaction(
     if not interaction.is_active:
         raise HTTPException(detail="Interaction is inactive", status_code=status.HTTP_409_CONFLICT)
     if current_user.id != interaction.user_id and current_user.role != UserRole.admin:
-        raise HTTPException(detail="Not enough permission", status_code=status.HTTP_400_BAD_REQUEST)
+        raise PERMISSION_EXCEPTION
     return interaction
 
 
@@ -88,7 +90,7 @@ def update_interaction(
     if not interaction:
         raise HTTPException(detail="Interaction not found", status_code=status.HTTP_404_NOT_FOUND)
     if current_user.id != interaction.user_id and current_user.role != UserRole.admin:
-        raise HTTPException(detail="Not enough permission", status_code=status.HTTP_400_BAD_REQUEST)
+        raise PERMISSION_EXCEPTION
     data = interaction_in.model_dump(exclude_unset=True)
     interaction.sqlmodel_update(data)
     session.add(interaction)
@@ -107,7 +109,7 @@ def delete_interaction(
     if not interaction:
         raise HTTPException(detail="Interaction not found", status_code=status.HTTP_404_NOT_FOUND)
     if current_user.id != interaction.user_id and current_user.role != UserRole.admin:
-        raise HTTPException(detail="Not enough permission", status_code=status.HTTP_400_BAD_REQUEST)
+        raise PERMISSION_EXCEPTION
     session.delete(interaction)
     session.commit()
     return JSONResponse(content={"detail": "Interaction was deleted successfully"}, status_code=status.HTTP_200_OK)

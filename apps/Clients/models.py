@@ -6,7 +6,6 @@ from pydantic import ConfigDict, EmailStr
 from enum import Enum
 
 from config.utils import utcnow_time
-from apps.Users.models import User
 
 
 class ClientSource(str, Enum):

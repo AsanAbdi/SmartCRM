@@ -92,7 +92,7 @@ def test_read_users(
     assert response.status_code == 200
     content = response.json()
     item = content["items"][0]
-    # assert content["total_count"] == 2
+    assert content["total_count"] >= 2
     assert "id" in item
     
 

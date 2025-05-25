@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     MAX_LIMIT: int = 200
     API_V1_STR: str = "/api/v1"
     ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
+    REFRESH_TOKEN_EXPIRE_MINUTES : int = 150
     SUPERUSER_USERNAME: str
     SUPERUSER_PASSWORD: str
     SUPERUSER_EMAIL: EmailStr
@@ -27,6 +28,6 @@ class Settings(BaseSettings):
         )
 
     class Config:
-        env_file = ".env"
+        env_file = "../.env"
 
 settings = Settings()

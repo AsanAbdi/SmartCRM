@@ -103,9 +103,9 @@ def test_read_clients(
         headers=super_user_headers
     )
     assert response.status_code == 200
-    # content = response.json()
-    # assert content["total_count"] == 2 TODO need to devide test db and orig db
-    
+    content = response.json()
+    assert content["total_count"] >= 2
+
 
 def test_read_clients_not_enough_permission(
     client: TestClient,

@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 import jwt
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from config.settings import settings
 from apps.Users.models import User
@@ -35,13 +35,13 @@ def get_current_user(
     )
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, ALGORITHM)
-        user_id = payload.get("sub")
-        if not user_id:
+        user_username = payload.get("sub")
+        if not user_username:
             raise exception
     except jwt.PyJWTError:
         raise exception
     
-    user = session.get(User, user_id)
+    user = session.exec(select(User).where(User.username == user_username)).first()
     if not user or not user.is_active:
         raise exception
     return user
