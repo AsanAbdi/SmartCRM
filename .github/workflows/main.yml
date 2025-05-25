@@ -30,14 +30,18 @@ jobs:
         echo "SUPERUSER_ROLE=${{ secrets.SUPERUSER_ROLE }}"         >> .env
         echo "NORMAL_USER_USERNAME=${{ secrets.NORMAL_USER_USERNAME }}" >> .env
 
-    - name: Start services with Docker Compose
-      run: |
-        docker compose up -d --build db web
+    - name: Start services
+      run: docker compose up -d --build
 
-    - name: Run migrations & tests inside web container
+    - name: Wait for Postgres on tcp/db:5432
+      run: |
+        until docker compose exec web bash -lc "nc -z db 5432"; do
+          sleep 1
+        done
+
+    - name: Run migrations & tests
       run: |
         docker compose exec web bash -lc "\
-          until pg_isready -h db -U postgres; do sleep 1; done && \
           alembic upgrade head && \
           pytest \
         "
