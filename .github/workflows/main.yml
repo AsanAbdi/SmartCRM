@@ -49,3 +49,7 @@ jobs:
     - name: Tear down
       if: always()
       run: docker compose down
+
+    - name: Deploy to Render
+      if: ${{ success() }}
+      run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
