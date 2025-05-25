@@ -26,11 +26,6 @@ jobs:
     - name: Установить PYTHONPATH
       run: echo "PYTHONPATH=${PYTHONPATH}:." >> $GITHUB_ENV
 
-    - name: Проверить
-      run: |
-          python -c "import os; print(os.environ['PYTHONPATH'])"
-    
-
     - name: Create .env
       run: |
         echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" > .env
@@ -47,6 +42,9 @@ jobs:
         echo "SUPERUSER_EMAIL=${{ secrets.SUPERUSER_EMAIL }}" >> .env
         echo "SUPERUSER_ROLE=${{ secrets.SUPERUSER_ROLE }}" >> .env
         echo "NORMAL_USER_USERNAME=${{ secrets.NORMAL_USER_USERNAME }}" >> .env
+
+    - name: Проверить .env
+      run: cat .env
 
     - name: Apply migrations
       run: alembic upgrade head
